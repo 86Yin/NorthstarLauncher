@@ -1,4 +1,5 @@
 #include "moddownloader.h"
+#include "mods/modmanager.h"
 #include "util/dohworker.h"
 #include "util/utils.h"
 #include <rapidjson/fwd.h>
@@ -430,7 +431,7 @@ int GetModArchiveSize(unzFile file, unz_global_info64 info)
 	return totalSize;
 }
 
-void ModDownloader::ExtractMod(fs::path modPath, fs::path destinationPath, VerifiedModPlatform platform)
+void ModDownloader::ExtractMod(fs::path modPath, VerifiedModPlatform platform)
 {
 	unzFile file;
 
@@ -473,6 +474,11 @@ void ModDownloader::ExtractMod(fs::path modPath, fs::path destinationPath, Verif
 		modState.state = UNKNOWN_PLATFORM;
 		return;
 	}
+
+	// Mod directory name (removing the ".zip" from the archive name)
+	std::string name = modPath.filename().string();
+	name = name.substr(0, name.length() - 4);
+	fs::path destinationPath = GetRemoteModFolderPath() / name;
 
 	for (int i = 0; i < gi.number_entry; i++)
 	{
@@ -690,7 +696,8 @@ void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
 			modDirectory = GetRemoteModFolderPath() / name;
 
 			// Extract downloaded mod archive
-			ExtractMod(archiveLocation, modDirectory, fullVersion.platform);
+			ExtractMod(archiveLocation, fullVersion.platform);
+			modState.state = DONE;
 		});
 
 	requestThread.detach();
