@@ -15,6 +15,11 @@ AUTOHOOK_INIT()
 ADD_SQFUNC("bool", NSSetLocalPlayerClanTag, "string clantag", "", ScriptContext::UI)
 {
 	std::string clantag = g_pSquirrel<ScriptContext::CLIENT>->getstring(sqvm, 1);
+	if (clantag.length() > 4)
+	{
+		g_pSquirrel<ScriptContext::CLIENT>->pushbool(sqvm, false);
+		return SQRESULT_NOTNULL;
+	}
 	bool result = g_pMasterServerManager->SetLocalPlayerClanTag(clantag);
 	g_pSquirrel<ScriptContext::CLIENT>->pushbool(sqvm, result);
 	return SQRESULT_NOTNULL;
